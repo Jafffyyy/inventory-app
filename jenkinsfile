@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = "us-east-1"
+        ECR_REPO = "320542636300.dkr.ecr.us-east-1.amazonaws.com/backend-repo"
+        CLUSTER = "app-cluster"
+        SERVICE = "backend-service"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t backend ./backend'
+                sh 'docker tag backend:latest backend-repo:latest'
+            }
+        }
+
+        stage('Login to ECR') {
+            steps {
+                sh '''
+                aws ecr get-login-password --region us-east-1 \
+                | docker login --username AWS --password-stdin 320542636300.dkr.ecr.us-east-1.amazonaws.com
+                '''
+            }
+        }
+
+        stage('Push to ECR') {
+            steps {
+                sh 'docker push backend-repo:latest'
+            }
+        }
+
+        stage('Deploy to ECS') {
+            steps {
+                sh '''
+                aws ecs update-service \
+                  --cluster "app-cluster" \
+                  --service "backend-service" \
+                  --force-new-deployment
+                '''
+            }
+        }
+    }
+}
