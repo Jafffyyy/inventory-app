@@ -19,7 +19,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t backend ./backend'
-                sh 'docker tag backend:latest backend-repo:latest'
+                sh 'docker tag backend:latest $ECR_REPO:latest'
             }
         }
 
@@ -34,7 +34,7 @@ pipeline {
 
         stage('Push to ECR') {
             steps {
-                sh 'docker push backend-repo:latest'
+                sh 'docker push $ECR_REPO:latest'
             }
         }
 
