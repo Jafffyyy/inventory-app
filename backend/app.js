@@ -43,6 +43,36 @@ app.post('/api/products', (req, res) => {
   );
 });
 
+// Update a product
+app.put('/api/products/:id', (req, res) => {
+  const { name, quantity } = req.body;
+  const { id } = req.params;
+
+  db.query(
+    'UPDATE products SET name = ?, quantity = ? WHERE id = ?',
+    [name, quantity, id],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json({ message: 'Product updated' });
+    }
+  );
+});
+
+// Delete a product
+app.delete('/api/products/:id', (req, res) => {
+  const { id } = req.params;
+
+  db.query(
+    'DELETE FROM products WHERE id = ?',
+    [id],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+      res.json({ message: 'Product deleted' });
+    }
+  );
+});
+
+
 app.listen(5000, () => {
   console.log('Backend running on port 5000');
 });
